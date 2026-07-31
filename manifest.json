@@ -1,0 +1,68 @@
+{
+  "id": "secrets_manager",
+  "name": "AWS Secrets Manager",
+  "name_en": "AWS Secrets Manager",
+  "version": "1.0.0",
+  "description": "Lectura de secretos gestionados en AWS: obtener secreto, listar secretos y rotar (opcional)",
+  "description_en": "Read managed secrets in AWS: get a secret, list secrets and rotate (optional)",
+  "icon": "icon.svg",
+  "category": "cloud",
+  "category_en": "cloud",
+  "keywords": ["aws", "secrets manager", "secretos", "secrets", "credenciales", "credentials", "amazon", "cloud"],
+  "library": {
+    "package": "ruvic-secrets-manager-connector",
+    "install": "pip install git+https://github.com/Dgirto/AWS-Secrets-Manager.git#subdirectory=lib",
+    "import_name": "ruvic_secrets_manager_connector"
+  },
+  "auth_modes": [
+    {
+      "id": "access_key",
+      "label": "Access Key ID y Secret Access Key",
+      "fields": [
+        {
+          "key": "access_key_id",
+          "label": "Access Key ID",
+          "type": "text",
+          "required": true,
+          "placeholder": "AKIAIOSFODNN7EXAMPLE"
+        },
+        {
+          "key": "secret_access_key",
+          "label": "Secret Access Key",
+          "type": "password",
+          "secret": true,
+          "required": true
+        },
+        {
+          "key": "region",
+          "label": "Región de AWS",
+          "type": "text",
+          "required": true,
+          "placeholder": "us-east-1"
+        },
+        {
+          "key": "secret_name_prefix",
+          "label": "Prefijo de nombre permitido (opcional)",
+          "type": "text",
+          "required": false,
+          "placeholder": "ruvic/",
+          "help_text": "Si se define, el conector solo puede leer/rotar secretos cuyo nombre empiece con este prefijo (capa extra de restricción, además de la policy IAM)."
+        },
+        {
+          "key": "connect_timeout",
+          "label": "Timeout de conexión (segundos)",
+          "type": "number",
+          "required": false,
+          "default": "10"
+        }
+      ]
+    }
+  ],
+  "env_prefix": "RUVIC_SECRETS_MANAGER_",
+  "operations": ["secrets.get_secret", "secrets.list_secrets", "secrets.rotate_secret"],
+  "test_connection": true,
+  "docs": {
+    "skill": "SKILL.md",
+    "permissions_note": "El usuario o rol IAM necesita secretsmanager:GetSecretValue y secretsmanager:ListSecrets sobre el alcance definido (recomendado: restringir por prefijo de ARN/nombre, no toda la cuenta). secretsmanager:RotateSecret es opcional, solo si se va a usar esa capacidad. No se requieren permisos de administración (secretsmanager:CreateSecret, secretsmanager:DeleteSecret, secretsmanager:PutSecretValue). Este conector puede exponer valores de secretos reales — restringí el alcance al mínimo indispensable."
+  }
+}
