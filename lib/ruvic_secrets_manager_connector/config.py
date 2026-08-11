@@ -24,7 +24,7 @@ class SecretsManagerConfig:
     connect_timeout: int = 10
 
     @classmethod
-    def from_env(cls) -> "SecretsManagerConfig":
+    def from_env(cls) -> SecretsManagerConfig:
         """Construye la configuración desde las variables RUVIC_SECRETS_MANAGER_*.
 
         Raises:
