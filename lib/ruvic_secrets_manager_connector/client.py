@@ -41,6 +41,12 @@ _NOT_FOUND_ERROR_CODES = {"ResourceNotFoundException"}
 _MAX_LIST_LIMIT = 100
 
 
+def _require_secret_id(secret_id: Any) -> str:
+    if secret_id is not None and not isinstance(secret_id, str):
+        raise SecretsManagerDataError(f"secret_id debe ser un string, no {type(secret_id).__name__}.")
+    return (secret_id or "").strip()
+
+
 def _wrap_client_error(exc: ClientError, not_found_message: str) -> SecretsManagerConnectorError:
     """Traduce un error de la API de AWS a una excepción propia, sin
     dejar escapar nunca el tipo crudo del SDK."""
@@ -137,7 +143,7 @@ class SecretsManagerClient:
             >>> client.get_secret("prod/db/password")
             'super-secreto-real'
         """
-        secret_id = (secret_id or "").strip()
+        secret_id = _require_secret_id(secret_id)
         if not secret_id:
             raise SecretsManagerDataError("secret_id no puede estar vacío.")
         self._check_prefix(secret_id)
@@ -172,7 +178,12 @@ class SecretsManagerClient:
             >>> client.list_secrets()
             [{'name': 'prod/db/password', 'arn': 'arn:aws:secretsmanager:...', ...}]
         """
-        max_results = max(1, min(int(max_results), _MAX_LIST_LIMIT))
+        try:
+            max_results = max(1, min(int(max_results), _MAX_LIST_LIMIT))
+        except (TypeError, ValueError) as exc:
+            raise SecretsManagerDataError(
+                f"max_results inválido: {max_results!r}. Debe ser un número entero."
+            ) from exc
         client = self._get_client()
         try:
             response = client.list_secrets(MaxResults=max_results)
@@ -220,7 +231,7 @@ class SecretsManagerClient:
             >>> client.rotate_secret("prod/db/password")
             'arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/db/password-AbCdEf'
         """
-        secret_id = (secret_id or "").strip()
+        secret_id = _require_secret_id(secret_id)
         if not secret_id:
             raise SecretsManagerDataError("secret_id no puede estar vacío.")
         self._check_prefix(secret_id)
